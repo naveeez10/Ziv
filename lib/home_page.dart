@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:persona/feature_box.dart';
 import 'package:persona/pallete.dart';
 
 class HomePage extends StatefulWidget {
@@ -51,8 +52,10 @@ class _HomePageState extends State<HomePage> {
             margin:
                 const EdgeInsets.symmetric(horizontal: 40).copyWith(top: 30),
             decoration: BoxDecoration(
-              border: Border.all(color: Pallete.borderColor),
-            ),
+                border: Border.all(color: Pallete.borderColor),
+                borderRadius: BorderRadius.circular(20).copyWith(
+                  topLeft: Radius.zero,
+                )),
             child: const Text(
               'Good Morning, What task can i do for you?',
               style: TextStyle(
@@ -61,7 +64,56 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          Container(
+            padding: const EdgeInsets.all(10),
+            alignment: Alignment.centerLeft,
+            margin: const EdgeInsets.only(
+              top: 10,
+              left: 22,
+            ),
+            child: const Text(
+              "Here are a few features",
+              style: TextStyle(
+                color: Pallete.mainFontColor,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              FeatureBox(
+                color: Pallete.firstSuggestionBoxColor,
+                headerText: "ChatGPT",
+                descriptionText:
+                    "A Smarter way to stay updated and Organized with ChatGPT",
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              FeatureBox(
+                color: Pallete.secondSuggestionBoxColor,
+                headerText: "Dall-E",
+                descriptionText:
+                    "Get Inspired and stay creative with your personal assistant powered by Dall-E",
+              ),
+              const SizedBox(
+                height: 2,
+              ),
+              FeatureBox(
+                color: Pallete.thirdSuggestionBoxColor,
+                headerText: "Smart Voice Assistant",
+                descriptionText:
+                    "Get the best of both worlds with a voice assistant powered by Dall-E and ChatGPT",
+              ),
+            ],
+          )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Pallete.firstSuggestionBoxColor,
+        child: const Icon(Icons.mic),
       ),
     );
   }
