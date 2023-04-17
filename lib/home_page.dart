@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:persona/feature_box.dart';
+import 'package:persona/openai_service.dart';
 import 'package:persona/pallete.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -13,6 +14,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final speechToText = SpeechToText();
+  final OpenAIService openAIService = OpenAIService();
   String lastWords = '';
   @override
   void initState() {
@@ -110,7 +112,7 @@ class _HomePageState extends State<HomePage> {
               left: 22,
             ),
             child: const Text(
-              "Here are a few features",
+              "Here are a few features. What would you like to try?",
               style: TextStyle(
                 color: Pallete.mainFontColor,
                 fontSize: 20,
@@ -153,6 +155,7 @@ class _HomePageState extends State<HomePage> {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
             await startListening();
           } else if (speechToText.isListening) {
+            await openAIService.isArtPromptApi(lastWords);
             await stopListening();
           } else {
             initSpeechToText();
