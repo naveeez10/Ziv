@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:persona/feature_box.dart';
 import 'package:persona/openai_service.dart';
 import 'package:persona/pallete.dart';
@@ -14,12 +15,22 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final speechToText = SpeechToText();
+  final flutterTts = FlutterTts();
+
   final OpenAIService openAIService = OpenAIService();
+  String? generatedContent;
+  String? generatedImageUrl;
   String lastWords = '';
   @override
   void initState() {
     super.initState();
     initSpeechToText();
+    initTextToSpeech();
+  }
+
+  Future<void> initTextToSpeech() async {
+    await flutterTts.setSharedInstance(true);
+    setState(() {});
   }
 
   Future<void> initSpeechToText() async {
@@ -34,8 +45,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> stopListening() async {
     await speechToText.stop();
-    print(lastWords);
     setState(() {});
+  }
+
+  Future<void> SystemSpeak(String content) async {
+    await flutterTts.speak(content);
   }
 
   void onSpeechResult(SpeechRecognitionResult result) {
@@ -47,6 +61,7 @@ class _HomePageState extends State<HomePage> {
     void dispose() {
       super.dispose();
       speechToText.stop();
+      flutterTts.stop();
     }
   }
 
@@ -84,69 +99,85 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
-            margin:
-                const EdgeInsets.symmetric(horizontal: 40).copyWith(top: 30),
-            decoration: BoxDecoration(
-                border: Border.all(color: Pallete.borderColor),
-                borderRadius: BorderRadius.circular(20).copyWith(
-                  topLeft: Radius.zero,
-                )),
-            child: const Text(
-              'Good Morning, What task can i do for you?',
-              style: TextStyle(
-                color: Pallete.mainFontColor,
-                fontSize: 23,
+          Visibility(
+            visible: generatedImageUrl == null ? true : false,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              margin:
+                  const EdgeInsets.symmetric(horizontal: 40).copyWith(top: 30),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Pallete.borderColor),
+                  borderRadius: BorderRadius.circular(20).copyWith(
+                    topLeft: Radius.zero,
+                  )),
+              child: Text(
+                generatedContent == null ? 'Good Morning, What task can i do for you?' : generatedContent!,
+                style: TextStyle(
+                  color: Pallete.mainFontColor,
+                  fontSize: generatedContent == null ? 23 : 18,
+                ),
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(10),
-            alignment: Alignment.centerLeft,
-            margin: const EdgeInsets.only(
-              top: 10,
-              left: 22,
+          if(generatedImageUrl != null)
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(generatedImageUrl!)),
             ),
-            child: const Text(
-              "Here are a few features. What would you like to try?",
-              style: TextStyle(
-                color: Pallete.mainFontColor,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          Visibility(
+            visible: generatedContent == null && generatedImageUrl == null ? true : false,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              alignment: Alignment.centerLeft,
+              margin: const EdgeInsets.only(
+                top: 10,
+                left: 22,
+              ),
+              child: const Text(
+                "Here are a few features. What would you like to try?",
+                style: TextStyle(
+                  color: Pallete.mainFontColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-          Column(
-            children: const [
-              FeatureBox(
-                color: Pallete.firstSuggestionBoxColor,
-                headerText: "ChatGPT",
-                descriptionText:
-                    "A Smarter way to stay updated and Organized with ChatGPT",
-              ),
-              SizedBox(
-                height: 2,
-              ),
-              FeatureBox(
-                color: Pallete.secondSuggestionBoxColor,
-                headerText: "Dall-E",
-                descriptionText:
-                    "Get Inspired and stay creative with your personal assistant powered by Dall-E",
-              ),
-              SizedBox(
-                height: 2,
-              ),
-              FeatureBox(
-                color: Pallete.thirdSuggestionBoxColor,
-                headerText: "Smart Voice Assistant",
-                descriptionText:
-                    "Get the best of both worlds with a voice assistant powered by Dall-E and ChatGPT",
-              ),
-            ],
+          Visibility(
+            visible: generatedContent == null && generatedImageUrl == null ? true : false,
+            child: Column(
+              children: const [
+                FeatureBox(
+                  color: Pallete.firstSuggestionBoxColor,
+                  headerText: "ChatGPT",
+                  descriptionText:
+                      "A Smarter way to stay updated and Organized with ChatGPT",
+                ),
+                SizedBox(
+                  height: 2,
+                ),
+                FeatureBox(
+                  color: Pallete.secondSuggestionBoxColor,
+                  headerText: "Dall-E",
+                  descriptionText:
+                      "Get Inspired and stay creative with your personal assistant powered by Dall-E",
+                ),
+                SizedBox(
+                  height: 2,
+                ),
+                FeatureBox(
+                  color: Pallete.thirdSuggestionBoxColor,
+                  headerText: "Smart Voice Assistant",
+                  descriptionText:
+                      "Get the best of both worlds with a voice assistant powered by Dall-E and ChatGPT",
+                ),
+              ],
+            ),
           )
         ],
       ),
@@ -155,7 +186,23 @@ class _HomePageState extends State<HomePage> {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
             await startListening();
           } else if (speechToText.isListening) {
-            await openAIService.isArtPromptApi(lastWords);
+            final speech = await openAIService.isArtPromptApi(lastWords);
+            if(speech.contains('https')) {
+              generatedImageUrl = speech;
+              generatedContent = null;
+              setState(() {
+
+              });
+            }
+            else {
+              generatedImageUrl = null;
+              generatedContent = speech;
+              setState(() {
+
+              });
+              await SystemSpeak(speech);
+            }
+
             await stopListening();
           } else {
             initSpeechToText();
