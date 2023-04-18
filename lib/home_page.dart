@@ -131,7 +131,8 @@ class _HomePageState extends State<HomePage> {
           ),
           if (generatedImageUrl != null)
             Padding(
-              padding: const EdgeInsets.all(10.0).copyWith(top: 30),
+              padding: const EdgeInsets.symmetric(horizontal: 10)
+                  .copyWith(top: 60, bottom: 10),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.network(generatedImageUrl!)),
