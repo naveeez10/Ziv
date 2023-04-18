@@ -1,3 +1,4 @@
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:persona/feature_box.dart';
@@ -69,68 +70,76 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("ziv"),
+        title: BounceInDown(child: const Text("ziv")),
         centerTitle: true,
         leading: const Icon(Icons.menu),
       ),
       body: Column(
         children: [
-          Stack(
-            children: [
-              Center(
-                child: Container(
-                  height: 120,
-                  width: 120,
-                  margin: const EdgeInsets.only(top: 4),
+          ZoomIn(
+            child: Stack(
+              children: [
+                Center(
+                  child: Container(
+                    height: 120,
+                    width: 120,
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: const BoxDecoration(
+                      color: Pallete.assistantCircleColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 123,
                   decoration: const BoxDecoration(
-                    color: Pallete.assistantCircleColor,
                     shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/virtualAssistant.png'),
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                height: 123,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/virtualAssistant.png'),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          Visibility(
-            visible: generatedImageUrl == null ? true : false,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 40).copyWith(top: 30),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Pallete.borderColor),
-                  borderRadius: BorderRadius.circular(20).copyWith(
-                    topLeft: Radius.zero,
-                  )),
-              child: Text(
-                generatedContent == null ? 'Good Morning, What task can i do for you?' : generatedContent!,
-                style: TextStyle(
-                  color: Pallete.mainFontColor,
-                  fontSize: generatedContent == null ? 23 : 18,
+          FadeInRight(
+            child: Visibility(
+              visible: generatedImageUrl == null ? true : false,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                margin: const EdgeInsets.symmetric(horizontal: 40)
+                    .copyWith(top: 30),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Pallete.borderColor),
+                    borderRadius: BorderRadius.circular(20).copyWith(
+                      topLeft: Radius.zero,
+                    )),
+                child: Text(
+                  generatedContent == null
+                      ? 'Good Morning, What task can i do for you?'
+                      : generatedContent!,
+                  style: TextStyle(
+                    color: Pallete.mainFontColor,
+                    fontSize: generatedContent == null ? 23 : 18,
+                  ),
                 ),
               ),
             ),
           ),
-          if(generatedImageUrl != null)
+          if (generatedImageUrl != null)
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0).copyWith(top: 30),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Image.network(generatedImageUrl!)),
             ),
           Visibility(
-            visible: generatedContent == null && generatedImageUrl == null ? true : false,
+            visible: generatedContent == null && generatedImageUrl == null
+                ? true
+                : false,
             child: Container(
               padding: const EdgeInsets.all(10),
               alignment: Alignment.centerLeft,
@@ -149,7 +158,9 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Visibility(
-            visible: generatedContent == null && generatedImageUrl == null ? true : false,
+            visible: generatedContent == null && generatedImageUrl == null
+                ? true
+                : false,
             child: Column(
               children: const [
                 FeatureBox(
@@ -186,30 +197,26 @@ class _HomePageState extends State<HomePage> {
           if (await speechToText.hasPermission && speechToText.isNotListening) {
             await startListening();
           } else if (speechToText.isListening) {
+            await stopListening();
             final speech = await openAIService.isArtPromptApi(lastWords);
-            if(speech.contains('https')) {
+            if (speech.contains('https')) {
               generatedImageUrl = speech;
               generatedContent = null;
-              setState(() {
-
-              });
-            }
-            else {
+              setState(() {});
+            } else {
               generatedImageUrl = null;
               generatedContent = speech;
-              setState(() {
-
-              });
+              setState(() {});
               await SystemSpeak(speech);
             }
-
-            await stopListening();
           } else {
             initSpeechToText();
           }
         },
         backgroundColor: Pallete.firstSuggestionBoxColor,
-        child: const Icon(Icons.mic),
+        child: speechToText.isListening
+            ? const Icon(Icons.stop)
+            : const Icon(Icons.mic),
       ),
     );
   }
