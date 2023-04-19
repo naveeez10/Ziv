@@ -71,8 +71,10 @@ class OpenAIService {
           'content': content,
         });
         return content;
+      } else {
+        print(response.body);
+        return "An Internal Error Occured";
       }
-      return response.body;
     } catch (e) {
       return e.toString();
     }
@@ -95,6 +97,7 @@ class OpenAIService {
         imageUrl = imageUrl.trim();
         return imageUrl;
       } else {
+        print(response.body);
         return 'An Internal Error occurred';
       }
     } catch (e) {
